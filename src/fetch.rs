@@ -18,6 +18,7 @@ use reqwest::header::RANGE;
 use backoff::{retry_notify, ExponentialBackoff};
 use crate::{MPD, Period, Representation, AdaptationSet, DashMpdError};
 use crate::{parse, is_audio_adaptation, is_video_adaptation, mux_audio_video};
+use hyper;
 
 
 /// A blocking `Client` from the `reqwest` crate, that we use to download content over HTTP.
@@ -454,7 +455,13 @@ fn resolve_url_template(template: &str, params: &HashMap<&str, String>) -> Strin
 
 
 fn reqwest_error_transient_p(e: &reqwest::Error) -> bool {
-    if e.is_timeout() || e.is_connect() {
+    if e.is_timeout() || e.is_connect() ||
+        (e.is_request() || e.is_body()) &&
+            e.source()
+            .and_then(|source| source.downcast_ref::<hyper::Error>())
+            .map_or(false, |he| {
+                he.is_connect() || he.is_timeout() || he.is_incomplete_message()
+            }) {
         return true;
     }
     if let Some(s) = e.status() {

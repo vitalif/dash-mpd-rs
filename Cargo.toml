@@ -22,6 +22,7 @@ log = "0.4"
 url = { version = "2", optional = true }
 data-url = { version = "0.2", optional = true }
 reqwest = { version = "0.11", default-features = false, features = ["blocking", "gzip", "brotli", "rustls-tls", "socks"], optional = true }
+hyper = { version = "0.14.18", default-features = false, features = ["tcp", "http1", "http2", "client", "runtime"] }
 backoff = { version = "0.4", optional = true }
 tempfile = { version = "3", optional = true }
 sanitise-file-name = { version = "1", optional = true }
